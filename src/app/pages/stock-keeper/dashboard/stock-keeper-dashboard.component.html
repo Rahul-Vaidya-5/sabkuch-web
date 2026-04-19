@@ -1,0 +1,80 @@
+<div class="stock-keeper-dashboard">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1>🏢 Stock Keeper</h1>
+      <p class="shop-name">{{ currentUser()?.shopName || 'Shop' }}</p>
+    </div>
+    <div class="header-actions">
+      <span class="user-badge">{{ currentUser()?.name }}</span>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  <nav class="dashboard-tabs">
+    <button class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')"><span class="tab-icon">📊</span> Overview</button>
+    <button class="tab-btn" [class.active]="activeTab() === 'stock'" (click)="setTab('stock')"><span class="tab-icon">📍</span> Locations</button>
+    <button class="tab-btn" [class.active]="activeTab() === 'intake'" (click)="setTab('intake')"><span class="tab-icon">📥</span> Intake</button>
+  </nav>
+
+  <main class="dashboard-main">
+    @if (activeTab() === 'overview') {
+      <div class="stats-grid">
+        <div class="stat-card">
+          <p class="stat-label">Total Locations</p>
+          <p class="stat-value">{{ totalLocations() }}</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Occupied Cells</p>
+          <p class="stat-value">{{ occupiedCells() }}</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Empty Spaces</p>
+          <p class="stat-value">{{ emptySpaces() }}</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Pending Intakes</p>
+          <p class="stat-value">{{ pendingIntakes() }}</p>
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'stock') {
+      <div class="section">
+        <h2>Stock Locations</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Location</th>
+                <th>Rack</th>
+                <th>Shelf</th>
+                <th>Cell</th>
+                <th>Status</th>
+                <th>Items</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (location of stockLocations(); track location.id) {
+                <tr [class.occupied]="location.status === 'Occupied'">
+                  <td class="mono">{{ location.id }}</td>
+                  <td>{{ location.rack }}</td>
+                  <td>{{ location.shelf }}</td>
+                  <td>{{ location.cell }}</td>
+                  <td><span class="badge" [class]="location.status.toLowerCase()">{{ location.status }}</span></td>
+                  <td><strong>{{ location.items }}</strong></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'intake') {
+      <div class="section">
+        <h2>Intake Operations</h2>
+        <p style="color: #6b7c8f;">Process incoming stock, update inventory, and manage warehouse receipts</p>
+      </div>
+    }
+  </main>
+</div>

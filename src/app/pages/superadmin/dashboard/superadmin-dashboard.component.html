@@ -1,0 +1,634 @@
+<div class="sa-shell">
+  <aside class="sa-sidebar">
+    <div class="brand-box">
+      <h1>Global Inventory</h1>
+      <p>Super Admin Console</p>
+    </div>
+
+    <nav class="side-nav">
+      <button class="side-link" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">
+        <span>Overview</span>
+      </button>
+      <button class="side-link" [class.active]="activeTab() === 'shops'" (click)="setTab('shops')">
+        <span>Shops</span>
+        <small>{{ totalShops() }}</small>
+      </button>
+      <button class="side-link" [class.active]="activeTab() === 'users'" (click)="setTab('users')">
+        <span>Users</span>
+        <small>{{ activeUsers() }}</small>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button type="button" class="logout-btn logout-sidebar" (click)="logout()">Logout</button>
+    </div>
+  </aside>
+
+  <section class="sa-content">
+    <header class="topbar">
+      <div>
+        <h2>{{ pageTitle() }}</h2>
+        <p>Monitor shops, user access and platform operations</p>
+      </div>
+
+      <div class="profile-area">
+        <div class="profile-avatar">{{ userInitials() }}</div>
+        <div class="profile-meta">
+          <strong>{{ currentUserName() }}</strong>
+          <span>{{ currentUserRole() }}</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard-main">
+    <!-- Overview Tab -->
+    @if (activeTab() === 'overview') {
+      <section class="overview-grid">
+        <div class="stat-card">
+          <div class="stat-icon">S</div>
+          <div class="stat-content">
+            <p class="stat-label">Total Shops</p>
+            <p class="stat-value">{{ totalShops() }}</p>
+            <p class="stat-sub">{{ activeShops() }} active</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">R</div>
+          <div class="stat-content">
+            <p class="stat-label">Monthly Revenue</p>
+            <p class="stat-value">₹{{ (totalRevenue() / 100000).toFixed(1) }}L</p>
+            <p class="stat-sub">From active shops</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">U</div>
+          <div class="stat-content">
+            <p class="stat-label">Platform Usage (30d)</p>
+            <p class="stat-value">{{ totalLogins30d() }}</p>
+            <p class="stat-sub">{{ averageLoginCount() }} avg per user</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">A</div>
+          <div class="stat-content">
+            <p class="stat-label">Active Users</p>
+            <p class="stat-value">{{ activeUsers() }}</p>
+            <p class="stat-sub">{{ inactiveUsers() }} inactive</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recent Activity -->
+      <section class="recent-section">
+        <h2>Recent Activity</h2>
+        <div class="activity-list">
+          @for (shop of recentShops(); track shop.shopId) {
+            <div class="activity-item" [class.inactive]="!shop.active">
+              <div class="activity-icon">{{ shop.shopName.slice(0, 1) }}</div>
+              <div class="activity-text">
+                <p class="activity-title">{{ shop.shopName }}</p>
+                <p class="activity-detail">Last activity: {{ shop.lastActivity }}</p>
+              </div>
+              <div class="activity-stat">{{ shop.loginCount30d }} logins</div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Shops Tab -->
+    @if (activeTab() === 'shops') {
+      <section class="table-section">
+        <div class="section-head">
+          <h2>Registered Shops</h2>
+          <button type="button" class="action-add-btn" (click)="toggleShopForm()">
+            <span class="action-add-icon">{{ showShopForm() ? 'x' : '+' }}</span>
+            <span>{{ showShopForm() ? 'Close Form' : 'Add New Shop' }}</span>
+          </button>
+        </div>
+
+        @if (showShopForm()) {
+          <form [formGroup]="shopForm" class="register-form" (ngSubmit)="submitShop()">
+            <div class="stepper">
+              <span class="step" [class.active]="shopFormStep() === 1">1. Shop Details</span>
+              <span class="step" [class.active]="shopFormStep() === 2">2. Owner Details</span>
+              <span class="step" [class.active]="shopFormStep() === 3">3. Review & Submit</span>
+            </div>
+
+            @if (shopFormStep() === 1) {
+              <div class="step-panel">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Shop Name *</label>
+                    <input type="text" formControlName="shopName" placeholder="e.g., Raj Hardware Store" />
+                  </div>
+                  <div class="form-group">
+                    <label>Any Other Known Name</label>
+                    <input type="text" formControlName="knownName" placeholder="Optional alternate name" />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Contact Number *</label>
+                    <input type="tel" formControlName="contactNumber" placeholder="10 digit mobile" maxlength="10" />
+                  </div>
+                  <div class="form-group">
+                    <label>Licence Number *</label>
+                    <input type="text" formControlName="licenceNumber" placeholder="Trade licence number" />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Shop Category *</label>
+                    <div
+                      #categoryPickerRoot
+                      class="tag-picker"
+                      [class.open]="categoryPickerOpen()"
+                      (focusout)="onCategoryFocusOut($event)"
+                      (keydown.escape)="closeCategoryPicker()"
+                    >
+                      <div class="picker-head">
+                        <small>Category</small>
+                        <span>{{ (shopForm.controls.categories.value ?? []).length }} selected</span>
+                      </div>
+                      <div class="tag-input" (click)="openCategoryPicker()">
+                        <div class="tag-list">
+                          @for (code of shopForm.controls.categories.value ?? []; track code) {
+                            <span class="pick-tag">
+                              {{ getCategoryLabel(code) }}
+                              <button type="button" (click)="removeCategoryTag(code)">×</button>
+                            </span>
+                          }
+                          @if (!(shopForm.controls.categories.value ?? []).length) {
+                            <span class="placeholder">Search and select categories</span>
+                          }
+                        </div>
+                        <div class="picker-search">
+                          <span class="picker-search-icon">⌕</span>
+                          <input
+                            type="text"
+                            [value]="categoryQuery()"
+                            (input)="setCategoryQuery($any($event.target).value)"
+                            (focus)="openCategoryPicker()"
+                            placeholder="Type to search category"
+                          />
+                          <button type="button" class="picker-close" (click)="closeCategoryPicker()">×</button>
+                        </div>
+                      </div>
+
+                      @if (categoryPickerOpen()) {
+                        <div class="picker-options">
+                          @for (cat of filteredCategories(); track cat.code) {
+                            <button
+                              type="button"
+                              class="picker-option"
+                              [class.selected]="isCategorySelected(cat.code)"
+                              (click)="toggleCategorySelection(cat.code)"
+                            >
+                              <span class="option-main">{{ cat.name_en }} <small>{{ cat.code }}</small></span>
+                              <span class="option-state">{{ isCategorySelected(cat.code) ? 'Selected' : 'Add' }}</span>
+                            </button>
+                          }
+                          @if (!filteredCategories().length) {
+                            <p class="picker-empty">No category found</p>
+                          }
+                        </div>
+                      }
+                    </div>
+                    <small class="helper">Search and select one or more categories</small>
+                  </div>
+                  <div class="form-group">
+                    <label>Shop Sub Category *</label>
+                    <div
+                      #subcategoryPickerRoot
+                      class="tag-picker"
+                      [class.open]="subcategoryPickerOpen()"
+                      [class.disabled]="!hasSelectedCategories()"
+                      (focusout)="onSubcategoryFocusOut($event)"
+                      (keydown.escape)="closeSubcategoryPicker()"
+                    >
+                      <div class="picker-head">
+                        <small>Subcategory</small>
+                        <span>{{ (shopForm.controls.subcategoryCodes.value ?? []).length }} selected</span>
+                      </div>
+                      <div class="tag-input" (click)="openSubcategoryPicker()">
+                        <div class="tag-list">
+                          @for (code of shopForm.controls.subcategoryCodes.value ?? []; track code) {
+                            <span class="pick-tag sub-tag">
+                              {{ getSubcategoryLabel(code) }}
+                              <button type="button" (click)="removeSubcategoryTag(code)">×</button>
+                            </span>
+                          }
+                          @if (!(shopForm.controls.subcategoryCodes.value ?? []).length) {
+                            <span class="placeholder">
+                              {{ hasSelectedCategories() ? 'Search and select subcategories' : 'Select at least one category first' }}
+                            </span>
+                          }
+                        </div>
+                        <div class="picker-search">
+                          <span class="picker-search-icon">⌕</span>
+                          <input
+                            type="text"
+                            [value]="subcategoryQuery()"
+                            [disabled]="!hasSelectedCategories()"
+                            (input)="setSubcategoryQuery($any($event.target).value)"
+                            (focus)="openSubcategoryPicker()"
+                            placeholder="Type to search subcategory"
+                          />
+                          <button type="button" class="picker-close" (click)="closeSubcategoryPicker()" [disabled]="!hasSelectedCategories()">×</button>
+                        </div>
+                      </div>
+
+                      @if (subcategoryPickerOpen() && hasSelectedCategories()) {
+                        <div class="picker-options">
+                          @for (sub of filteredSubcategories(); track sub.code) {
+                            <button
+                              type="button"
+                              class="picker-option"
+                              [class.selected]="isSubcategorySelected(sub.code)"
+                              (click)="toggleSubcategorySelection(sub.code)"
+                            >
+                              <span class="option-main">{{ sub.name_en }} <small>{{ sub.code }}</small></span>
+                              <span class="option-state">{{ isSubcategorySelected(sub.code) ? 'Selected' : 'Add' }}</span>
+                            </button>
+                          }
+                          @if (!filteredSubcategories().length) {
+                            <p class="picker-empty">No subcategory found for selected category</p>
+                          }
+                        </div>
+                      }
+                    </div>
+                    <small class="helper">Subcategory is enabled only after selecting at least one category</small>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group full">
+                    <label>Address Line 1 *</label>
+                    <input type="text" formControlName="addressLine1" placeholder="House/Shop no, street" />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group full">
+                    <label>Address Line 2</label>
+                    <input type="text" formControlName="addressLine2" placeholder="Area/locality (optional)" />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Landmark</label>
+                    <input type="text" formControlName="landmark" placeholder="Nearby known landmark" />
+                  </div>
+                  <div class="form-group">
+                    <label>District *</label>
+                    <select formControlName="districtId">
+                      <option value="">Select District</option>
+                      @for (district of districtMasters(); track district.districtId) {
+                        <option [value]="district.districtId">{{ district.districtNameEnglish }}</option>
+                      }
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Block *</label>
+                    <select formControlName="blockId">
+                      <option value="">Select Block</option>
+                      @for (block of availableBlocks(); track block.blockId) {
+                        <option [value]="block.blockId">{{ block.blockNameEnglish }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Pin Code *</label>
+                    <input type="text" formControlName="pinCode" placeholder="6 digit pin" maxlength="6" />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group full">
+                    <label>Shop Image</label>
+                    <input type="file" accept="image/*" (change)="onFilePicked('shopImageName', $event)" />
+                    @if (shopForm.controls.shopImageName.value) {
+                      <small class="helper">Selected: {{ shopForm.controls.shopImageName.value }}</small>
+                    }
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="button" class="btn-secondary" (click)="toggleShopForm()">Cancel</button>
+                  <button type="button" class="btn-primary" (click)="goToNextShopStep()">Next</button>
+                </div>
+              </div>
+            }
+
+            @if (shopFormStep() === 2) {
+              <div class="step-panel owner-step-panel">
+                <div class="owner-team-layout">
+                  <section class="owner-profile-panel">
+                    <div class="owner-section-head">
+                      <h3>Owner Profile</h3>
+                      <p>Add primary owner details.</p>
+                    </div>
+
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label>Title *</label>
+                        <select formControlName="ownerTitle">
+                          @for (title of ownerTitleOptions; track title) {
+                            <option [value]="title">{{ title }}</option>
+                          }
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label>Shop Owner Name *</label>
+                        <input type="text" formControlName="ownerName" placeholder="Owner full name" />
+                      </div>
+                    </div>
+
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label>Shop Owner Mobile Number *</label>
+                        <input type="tel" formControlName="ownerMobile" placeholder="10 digit mobile" maxlength="10" />
+                      </div>
+                      <div class="form-group">
+                        <label>Date of Birth *</label>
+                        <input type="date" formControlName="ownerDob" />
+                      </div>
+                    </div>
+
+                    <label class="checkbox-line owner-admin-checkbox">
+                      <input type="checkbox" formControlName="ownerAlsoAdmin" />
+                      Owner is also admin
+                    </label>
+
+                    <div class="form-row">
+                      <div class="form-group full">
+                        <label>Profile Picture</label>
+                        <input class="file-input" type="file" accept="image/*" (change)="onFilePicked('ownerProfileImageName', $event)" />
+                        @if (shopForm.controls.ownerProfileImageName.value) {
+                          <small class="helper">Selected: {{ shopForm.controls.ownerProfileImageName.value }}</small>
+                        }
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="team-roles-panel role-sections-wrap">
+                    <div class="team-head">
+                      <h3>Team Assignment</h3>
+                      <span>5 roles</span>
+                    </div>
+                    <p class="team-subtitle">Each role contact below becomes a user for this shop.</p>
+
+                    <div class="staff-grid">
+                      <div class="staff-card role-admin-card">
+                        <h4>1. Admin</h4>
+                        <div class="staff-input-row">
+                          <input type="text" formControlName="adminName" placeholder="Admin name" [readonly]="shopForm.controls.ownerAlsoAdmin.value" />
+                          <input type="tel" formControlName="adminMobile" placeholder="Mobile number" maxlength="10" [readonly]="shopForm.controls.ownerAlsoAdmin.value" />
+                        </div>
+                      </div>
+                      <div class="staff-card role-manager-card">
+                        <h4>2. Shop Manager</h4>
+                        <div class="staff-input-row">
+                          <input type="text" formControlName="managerName" placeholder="Shop manager name" />
+                          <input type="tel" formControlName="managerMobile" placeholder="Mobile number" maxlength="10" />
+                        </div>
+                      </div>
+                      <div class="staff-card role-sales-card">
+                        <h4>3. Sales Executive</h4>
+                        <div class="staff-input-row">
+                          <input type="text" formControlName="salesName" placeholder="Sales executive name" />
+                          <input type="tel" formControlName="salesMobile" placeholder="Mobile number" maxlength="10" />
+                        </div>
+                      </div>
+                      <div class="staff-card role-product-card">
+                        <h4>4. Product Manager</h4>
+                        <div class="staff-input-row">
+                          <input type="text" formControlName="productManagerName" placeholder="Product manager name" />
+                          <input type="tel" formControlName="productManagerMobile" placeholder="Mobile number" maxlength="10" />
+                        </div>
+                      </div>
+                      <div class="staff-card role-stock-card">
+                        <h4>5. Stock Keeper</h4>
+                        <div class="staff-input-row">
+                          <input type="text" formControlName="stockKeeperName" placeholder="Stock keeper name" />
+                          <input type="tel" formControlName="stockKeeperMobile" placeholder="Mobile number" maxlength="10" />
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                <div class="form-actions wizard-nav-actions">
+                  <button type="button" class="btn-secondary" (click)="goToPreviousShopStep()">Back</button>
+                  <button type="button" class="btn-primary" (click)="goToNextShopStep()">Next</button>
+                </div>
+              </div>
+            }
+
+            @if (shopFormStep() === 3) {
+              <div class="step-panel review-panel">
+                <h3>Review Shop Registration</h3>
+
+                <div class="review-grid">
+                  <p><strong>Shop Name:</strong> {{ shopForm.controls.shopName.value }}</p>
+                  <p><strong>Known Name:</strong> {{ shopForm.controls.knownName.value || '-' }}</p>
+                  <p><strong>Contact Number:</strong> {{ shopForm.controls.contactNumber.value }}</p>
+                  <p><strong>Licence Number:</strong> {{ shopForm.controls.licenceNumber.value }}</p>
+                  <p><strong>Categories:</strong> {{ getCategoryLabels(shopForm.controls.categories.value) }}</p>
+                  <p><strong>Sub Categories:</strong> {{ getSubcategoryLabels(shopForm.controls.subcategoryCodes.value) }}</p>
+                  <p><strong>District:</strong> {{ getDistrictLabelById(shopForm.controls.districtId.value) }}</p>
+                  <p><strong>Block:</strong> {{ getBlockLabelById(shopForm.controls.districtId.value, shopForm.controls.blockId.value) }}</p>
+                  <p><strong>Pin Code:</strong> {{ shopForm.controls.pinCode.value }}</p>
+                  <p><strong>Address:</strong> {{ shopForm.controls.addressLine1.value }} {{ shopForm.controls.addressLine2.value }}</p>
+                  <p><strong>Landmark:</strong> {{ shopForm.controls.landmark.value || '-' }}</p>
+                  <p><strong>Owner:</strong> {{ shopForm.controls.ownerTitle.value }} {{ shopForm.controls.ownerName.value }}</p>
+                  <p><strong>Owner Mobile:</strong> {{ shopForm.controls.ownerMobile.value }}</p>
+                  <p><strong>Owner DOB:</strong> {{ shopForm.controls.ownerDob.value }}</p>
+                  <p><strong>Admin:</strong> {{ shopForm.controls.adminName.value }} ({{ shopForm.controls.adminMobile.value }})</p>
+                  <p><strong>Shop Manager:</strong> {{ shopForm.controls.managerName.value }} ({{ shopForm.controls.managerMobile.value }})</p>
+                  <p><strong>Sales Executive:</strong> {{ shopForm.controls.salesName.value }} ({{ shopForm.controls.salesMobile.value }})</p>
+                  <p><strong>Product Manager:</strong> {{ shopForm.controls.productManagerName.value }} ({{ shopForm.controls.productManagerMobile.value }})</p>
+                  <p><strong>Stock Keeper:</strong> {{ shopForm.controls.stockKeeperName.value }} ({{ shopForm.controls.stockKeeperMobile.value }})</p>
+                </div>
+
+                <label class="checkbox-line acknowledge-line">
+                  <input type="checkbox" formControlName="reviewAck" />
+                  I acknowledge that all details are correct and ready to submit.
+                </label>
+
+                <div class="form-actions wizard-nav-actions">
+                  <button type="button" class="btn-secondary" (click)="goToPreviousShopStep()">Back</button>
+                  <button type="submit" class="btn-primary" [disabled]="validationEnabled && !shopForm.valid">Submit Registration</button>
+                </div>
+              </div>
+            }
+          </form>
+        }
+
+        @if (!showShopForm()) {
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Shop ID</th>
+                  <th>Shop Name</th>
+                  <th>Owner</th>
+                  <th>Categories</th>
+                  <th>City</th>
+                  <th>Revenue</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (shop of shops(); track shop.shopId) {
+                  <tr [class.inactive]="!shop.active">
+                    <td class="mono">{{ shop.shopId }}</td>
+                    <td><strong>{{ shop.shopName }}</strong></td>
+                    <td>{{ shop.ownerName }}<br><span class="muted">{{ shop.ownerMobile }}</span></td>
+                    <td>{{ getCategoryLabels(shop.categories) }}</td>
+                    <td>{{ shop.city }}</td>
+                    <td class="amount">₹{{ shop.monthlyRevenue.toLocaleString('en-IN') }}</td>
+                    <td>
+                      <span class="badge" [class.active]="shop.active" [class.inactive]="!shop.active">
+                        {{ shop.active ? '✓ Active' : '✗ Inactive' }}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        class="action-btn"
+                        [class.deactivate]="shop.active"
+                        [class.activate]="!shop.active"
+                        (click)="toggleShopActive(shop.shopId)"
+                      >
+                        {{ shop.active ? 'Deactivate' : 'Activate' }}
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    }
+
+    <!-- Users Tab -->
+    @if (activeTab() === 'users') {
+      <section class="table-section">
+        <div class="section-head">
+          <h2>Registered Users</h2>
+          <button type="button" class="btn-primary" (click)="toggleUserForm()">
+            {{ showUserForm() ? 'Hide User Form' : '+ Add New User' }}
+          </button>
+        </div>
+
+        @if (showUserForm()) {
+          <form [formGroup]="userForm" class="register-form" (ngSubmit)="submitUser()">
+            <div class="form-row">
+              <div class="form-group">
+                <label>User Name *</label>
+                <input type="text" formControlName="name" placeholder="Full name" />
+              </div>
+              <div class="form-group">
+                <label>Mobile *</label>
+                <input type="tel" formControlName="mobile" placeholder="10 digit mobile" maxlength="10" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Role *</label>
+                <select formControlName="role">
+                  @for (role of userRoleOptions; track role) {
+                    <option [value]="role">{{ getRoleLabel(role) }}</option>
+                  }
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Assign Shop *</label>
+                <select formControlName="shopId">
+                  <option value="">Select Shop</option>
+                  @for (shop of availableShops(); track shop.shopId) {
+                    <option [value]="shop.shopId">{{ shop.shopName }} ({{ shop.shopId }})</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn-secondary" (click)="toggleUserForm()">Cancel</button>
+              <button type="submit" class="btn-primary" [disabled]="validationEnabled && !userForm.valid">Create User</button>
+            </div>
+          </form>
+        }
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Role</th>
+                <th>Shop</th>
+                <th>Last Login</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of users(); track user.userId) {
+                <tr [class.inactive]="!user.active">
+                  <td class="mono">{{ user.userId }}</td>
+                  <td><strong>{{ user.name }}</strong></td>
+                  <td class="mono">{{ user.mobile }}</td>
+                  <td>
+                    <span class="role-tag" [class]="getRoleClass(user.role)">
+                      {{ getRoleLabel(user.role) }}
+                    </span>
+                  </td>
+                  <td>
+                    @if (user.shopId) {
+                      <span>{{ user.shopName }}</span>
+                    } @else {
+                      <span class="muted">-</span>
+                    }
+                  </td>
+                  <td>{{ user.lastLogin }}</td>
+                  <td>
+                    <span class="badge" [class.active]="user.active" [class.inactive]="!user.active">
+                      {{ user.active ? '✓ Active' : '✗ Inactive' }}
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      class="action-btn"
+                      [class.deactivate]="user.active"
+                      [class.activate]="!user.active"
+                      (click)="toggleUserActive(user.userId)"
+                    >
+                      {{ user.active ? 'Deactivate' : 'Activate' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    </main>
+  </section>
+</div>

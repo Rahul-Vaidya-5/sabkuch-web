@@ -1,0 +1,142 @@
+<section class="masters-shell">
+  <header class="masters-header">
+    <div>
+      <h2>🗂️ Product Masters</h2>
+      <p>Manage product categories, brands, variants, units, and package labels.</p>
+    </div>
+    <div class="summary-grid">
+      <div class="chip">Categories: {{ summary().categories }}</div>
+      <div class="chip">Brands: {{ summary().brands }}</div>
+      <div class="chip">Variants: {{ summary().variants }}</div>
+      <div class="chip">Units: {{ summary().units }}</div>
+      <div class="chip">Labels: {{ summary().packageLabels }}</div>
+    </div>
+  </header>
+
+  <div class="masters-grid">
+    <article class="master-card">
+      <h3>Product Categories</h3>
+      <div class="add-row">
+        <input type="text" [ngModel]="newCategory()" (ngModelChange)="newCategory.set($event)" placeholder="Add category">
+        <button type="button" (click)="addCategory()">Add</button>
+      </div>
+      <ul>
+        @for (item of productCategories(); track item; let i = $index) {
+          <li>
+            @if (isEditing('category', i)) {
+              <input type="text" [ngModel]="editingValue()" (ngModelChange)="editingValue.set($event)">
+              <button type="button" (click)="saveEdit()">Save</button>
+              <button type="button" class="ghost" (click)="cancelEdit()">Cancel</button>
+            } @else {
+              <span>{{ item }}</span>
+              <div class="actions">
+                <button type="button" class="ghost" (click)="startEdit('category', i, item)">Edit</button>
+                <button type="button" class="danger" (click)="deleteItem('category', i)">Delete</button>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    </article>
+
+    <article class="master-card">
+      <h3>Brands</h3>
+      <div class="add-row">
+        <input type="text" [ngModel]="newBrand()" (ngModelChange)="newBrand.set($event)" placeholder="Add brand">
+        <button type="button" (click)="addBrand()">Add</button>
+      </div>
+      <ul>
+        @for (item of brands(); track item; let i = $index) {
+          <li>
+            @if (isEditing('brand', i)) {
+              <input type="text" [ngModel]="editingValue()" (ngModelChange)="editingValue.set($event)">
+              <button type="button" (click)="saveEdit()">Save</button>
+              <button type="button" class="ghost" (click)="cancelEdit()">Cancel</button>
+            } @else {
+              <span>{{ item }}</span>
+              <div class="actions">
+                <button type="button" class="ghost" (click)="startEdit('brand', i, item)">Edit</button>
+                <button type="button" class="danger" (click)="deleteItem('brand', i)">Delete</button>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    </article>
+
+    <article class="master-card">
+      <h3>Variants</h3>
+      <div class="add-row">
+        <input type="text" [ngModel]="newVariant()" (ngModelChange)="newVariant.set($event)" placeholder="Add variant">
+        <button type="button" (click)="addVariant()">Add</button>
+      </div>
+      <ul>
+        @for (item of productVariants(); track item; let i = $index) {
+          <li>
+            @if (isEditing('variant', i)) {
+              <input type="text" [ngModel]="editingValue()" (ngModelChange)="editingValue.set($event)">
+              <button type="button" (click)="saveEdit()">Save</button>
+              <button type="button" class="ghost" (click)="cancelEdit()">Cancel</button>
+            } @else {
+              <span>{{ item }}</span>
+              <div class="actions">
+                <button type="button" class="ghost" (click)="startEdit('variant', i, item)">Edit</button>
+                <button type="button" class="danger" (click)="deleteItem('variant', i)">Delete</button>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    </article>
+
+    <article class="master-card">
+      <h3>Units</h3>
+      <div class="add-row">
+        <input type="text" [ngModel]="newUnit()" (ngModelChange)="newUnit.set($event)" placeholder="Add unit">
+        <button type="button" (click)="addUnit()">Add</button>
+      </div>
+      <ul>
+        @for (item of units(); track item; let i = $index) {
+          <li>
+            @if (isEditing('unit', i)) {
+              <input type="text" [ngModel]="editingValue()" (ngModelChange)="editingValue.set($event)">
+              <button type="button" (click)="saveEdit()">Save</button>
+              <button type="button" class="ghost" (click)="cancelEdit()">Cancel</button>
+            } @else {
+              <span>{{ item }}</span>
+              <div class="actions">
+                <button type="button" class="ghost" (click)="startEdit('unit', i, item)">Edit</button>
+                <button type="button" class="danger" (click)="deleteItem('unit', i)">Delete</button>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    </article>
+
+    <article class="master-card">
+      <h3>Package Labels</h3>
+      <div class="add-row">
+        <input type="text" [ngModel]="newPackageLabel()" (ngModelChange)="newPackageLabel.set($event)" placeholder="Add package label">
+        <button type="button" (click)="addPackageLabel()">Add</button>
+      </div>
+      <ul>
+        @for (item of packageLabels(); track item; let i = $index) {
+          <li>
+            @if (isEditing('packageLabel', i)) {
+              <input type="text" [ngModel]="editingValue()" (ngModelChange)="editingValue.set($event)">
+              <button type="button" (click)="saveEdit()">Save</button>
+              <button type="button" class="ghost" (click)="cancelEdit()">Cancel</button>
+            } @else {
+              <span>{{ item }}</span>
+              <div class="actions">
+                <button type="button" class="ghost" (click)="startEdit('packageLabel', i, item)">Edit</button>
+                <button type="button" class="danger" (click)="deleteItem('packageLabel', i)">Delete</button>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    </article>
+  </div>
+</section>

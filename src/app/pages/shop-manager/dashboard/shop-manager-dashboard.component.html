@@ -1,0 +1,65 @@
+<div class="shop-manager-dashboard">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1>🏪 Shop Manager</h1>
+      <p class="shop-name">{{ currentUser()?.shopName || 'Shop' }}</p>
+    </div>
+    <div class="header-actions">
+      <span class="user-badge">{{ currentUser()?.name }}</span>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  <nav class="dashboard-tabs">
+    <button class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')"><span class="tab-icon">📊</span> Overview</button>
+      <button class="tab-btn" [class.active]="activeTab() === 'entry'" (click)="setTab('entry')"><span class="tab-icon">➕</span> Add Product</button>
+    <button class="tab-btn" [class.active]="activeTab() === 'products'" (click)="setTab('products')"><span class="tab-icon">📦</span> Products</button>
+    <button class="tab-btn" [class.active]="activeTab() === 'pricing'" (click)="setTab('pricing')"><span class="tab-icon">💰</span> Pricing</button>
+  </nav>
+
+  <main class="dashboard-main">
+    @if (activeTab() === 'overview') {
+      <div class="section overview-cta">
+        <h2>Get Started</h2>
+        <p>Use Product Entry to add a new item with pricing, discounts, and GST.</p>
+        <button class="cta-btn" (click)="setTab('entry')">➕ Add Product Now</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <p class="stat-label">Total Products</p>
+          <p class="stat-value">{{ totalProducts() }}</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Low Stock Items</p>
+          <p class="stat-value">{{ lowStockItems() }}</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Total Inventory Value</p>
+          <p class="stat-value">₹{{ (totalInventory() / 100000).toFixed(1) }}L</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Avg Price</p>
+          <p class="stat-value">₹{{ avgPrice() }}</p>
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'entry') {
+      <div class="entry-panel">
+        <app-product-entry-shared></app-product-entry-shared>
+      </div>
+    }
+
+    @if (activeTab() === 'products') {
+      <app-product-list-shared [title]="'📦 Products Inventory'" (addProduct)="setTab('entry')"></app-product-list-shared>
+    }
+
+    @if (activeTab() === 'pricing') {
+      <div class="section">
+        <h2>Pricing & Discounts</h2>
+        <p style="color: #6b7c8f;">Configure pricing rules, bulk discounts, and promotional settings</p>
+      </div>
+    }
+  </main>
+</div>

@@ -1,0 +1,196 @@
+<div class="admin-dashboard">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1>👨‍💼 Admin</h1>
+      <p class="shop-name">{{ currentUser()?.shopName || 'Shop' }}</p>
+    </div>
+    <div class="header-actions">
+      <span class="user-badge">{{ currentUser()?.name }}</span>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  <nav class="dashboard-tabs">
+    <button class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">
+      <span class="tab-icon">📊</span> Overview
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'users'" (click)="setTab('users')">
+      <span class="tab-icon">👥</span> Users
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'operations'" (click)="setTab('operations')">
+      <span class="tab-icon">⚙️</span> Operations
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'entry'" (click)="setTab('entry')">
+      <span class="tab-icon">➕</span> Add Product
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'products'" (click)="setTab('products')">
+      <span class="tab-icon">📦</span> Products
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'masters'" (click)="setTab('masters')">
+      <span class="tab-icon">🗂️</span> Masters
+    </button>
+  </nav>
+
+  <main class="dashboard-main">
+    <!-- Overview Tab -->
+    @if (activeTab() === 'overview') {
+      <div class="tab-panel overview-panel">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon users">U</div>
+            <div class="stat-content">
+              <p class="stat-label">Total Users</p>
+              <p class="stat-value">{{ totalUsers() }}</p>
+              <p class="stat-sub">{{ activeUsers() }} active</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon sales">$</div>
+            <div class="stat-content">
+              <p class="stat-label">Total Sales</p>
+              <p class="stat-value">₹{{ (totalSales() / 100000).toFixed(1) }}L</p>
+              <p class="stat-sub">This month</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon orders">📦</div>
+            <div class="stat-content">
+              <p class="stat-label">Total Orders</p>
+              <p class="stat-value">{{ totalOrders() }}</p>
+              <p class="stat-sub">Completed</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon avg">Ø</div>
+            <div class="stat-content">
+              <p class="stat-label">Avg Order Value</p>
+              <p class="stat-value">₹{{ (avgOrderValue()).toLocaleString() }}</p>
+              <p class="stat-sub">Per order</p>
+            </div>
+          </div>
+        </div>
+
+        <section class="section">
+          <h2>Recent Activity</h2>
+          <div class="activity-list">
+            <div class="activity-item">
+              <span class="activity-status">✓</span>
+              <div class="activity-text">
+                <p class="activity-title">New order from customer</p>
+                <p class="activity-time">2 hours ago</p>
+              </div>
+              <span class="activity-value">₹2,450</span>
+            </div>
+            <div class="activity-item">
+              <span class="activity-status">✓</span>
+              <div class="activity-text">
+                <p class="activity-title">Stock replenishment completed</p>
+                <p class="activity-time">5 hours ago</p>
+              </div>
+              <span class="activity-value">+150</span>
+            </div>
+            <div class="activity-item">
+              <span class="activity-status">⚠</span>
+              <div class="activity-text">
+                <p class="activity-title">Low stock alert for item</p>
+                <p class="activity-time">1 day ago</p>
+              </div>
+              <span class="activity-value">-5</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    }
+
+    <!-- Add Product Tab -->
+    @if (activeTab() === 'entry') {
+      <app-product-entry-shared></app-product-entry-shared>
+    }
+
+    <!-- Products Tab -->
+    @if (activeTab() === 'products') {
+      <app-product-list-shared [title]="'📦 Product Catalog'" [allowDelete]="true" (addProduct)="setTab('entry')"></app-product-list-shared>
+    }
+
+    <!-- Masters Tab -->
+    @if (activeTab() === 'masters') {
+      <app-product-masters-shared></app-product-masters-shared>
+    }
+
+    <!-- Users Tab -->
+    @if (activeTab() === 'users') {
+      <div class="tab-panel users-panel">
+        <div class="section-head">
+          <h2>User Management</h2>
+          <button class="action-btn">+ Add User</button>
+        </div>
+
+        <div class="users-table">
+          <table>
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Last Login</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of users(); track user.id) {
+                <tr [class.inactive]="user.status === 'Inactive'">
+                  <td class="mono">{{ user.id }}</td>
+                  <td><strong>{{ user.name }}</strong></td>
+                  <td><span class="role-badge">{{ user.role }}</span></td>
+                  <td>
+                    <span class="status-badge" [class]="user.status.toLowerCase()">
+                      {{ user.status }}
+                    </span>
+                  </td>
+                  <td>{{ user.lastLogin }}</td>
+                  <td>
+                    <button class="action-link">Edit</button>
+                    <button class="action-link danger">Deactivate</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- Operations Tab -->
+    @if (activeTab() === 'operations') {
+      <div class="tab-panel operations-panel">
+        <h2>Operations & Settings</h2>
+        <div class="operations-grid">
+          <div class="operation-card">
+            <h3>⚙️ System Settings</h3>
+            <p>Configure system parameters, rules, and policies</p>
+            <button class="card-btn">Configure</button>
+          </div>
+          <div class="operation-card">
+            <h3>📊 Reports</h3>
+            <p>Generate and download business reports</p>
+            <button class="card-btn">View Reports</button>
+          </div>
+          <div class="operation-card">
+            <h3>🔐 Audit Log</h3>
+            <p>Track all user actions and system changes</p>
+            <button class="card-btn">View Logs</button>
+          </div>
+          <div class="operation-card">
+            <h3>🔄 Backup</h3>
+            <p>Manage data backups and recovery</p>
+            <button class="card-btn">Backup Now</button>
+          </div>
+        </div>
+      </div>
+    }
+  </main>
+</div>

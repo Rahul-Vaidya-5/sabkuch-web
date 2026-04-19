@@ -1,0 +1,17 @@
+<div class="app-shell" [class.full-bleed]="isDashboardRoute()">
+  @if (!isDashboardRoute()) {
+    <header class="topbar">
+      <div>
+        <h1>{{ title }}</h1>
+        <p>Inventory Management for Local Shops</p>
+      </div>
+      <nav>
+        <a routerLink="/login" routerLinkActive="active">Shopkeeper Login</a>
+      </nav>
+    </header>
+  }
+
+  <main class="content" [class.content-dashboard]="isDashboardRoute()">
+    <router-outlet />
+  </main>
+</div>

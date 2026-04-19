@@ -1,0 +1,108 @@
+:host {
+  display: block;
+}
+
+.login-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.login-card {
+  width: min(460px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.2rem;
+}
+
+h1 {
+  margin: 0;
+}
+
+p {
+  color: var(--muted);
+}
+
+form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+
+input {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.6rem 0.7rem;
+  font: inherit;
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  font-weight: 700;
+  background: var(--accent);
+  color: #05203f;
+  cursor: pointer;
+}
+
+.secondary {
+  margin-top: 0.4rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.error {
+  color: #b11818;
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+
+.success {
+  color: #1c7f2b;
+  font-weight: 600;
+}
+
+.authenticated-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #c3e6cb;
+  border-radius: 12px;
+  background: #f0fff4;
+  display: grid;
+  gap: 0.4rem;
+
+  p { margin: 0; }
+}
+
+.muted-note {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 400;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  width: fit-content;
+}
+
+.role-superadmin {
+  background: #7c3aed;
+  color: #fff;
+}
+
+.role-admin {
+  background: var(--accent);
+  color: #05203f;
+}

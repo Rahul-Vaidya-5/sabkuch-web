@@ -1,0 +1,126 @@
+<div class="product-manager-dashboard">
+  @if (isSidebarOpen()) {
+    <button class="sidebar-backdrop" type="button" aria-label="Close sidebar" (click)="closeSidebar()"></button>
+  }
+
+  <aside class="dashboard-sidebar" [class.open]="isSidebarOpen()">
+    <div class="sidebar-top">
+      <div class="brand-block">
+        <div class="brand-mark">PM</div>
+        <div>
+          <p class="brand-label">Inventory Workspace</p>
+          <h1>Product Manager</h1>
+        </div>
+      </div>
+
+      <button class="sidebar-close" type="button" aria-label="Close sidebar" (click)="closeSidebar()">×</button>
+    </div>
+
+    <div class="sidebar-user-card">
+      <span class="sidebar-user-name">{{ currentUser()?.name }}</span>
+      <span class="sidebar-shop-name">{{ currentUser()?.shopName || 'Shop' }}</span>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Product manager sections">
+      @for (item of navItems; track item.key) {
+        <button class="nav-item" [class.active]="activeTab() === item.key" (click)="setTab(item.key)">
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span>{{ item.label }}</span>
+        </button>
+      }
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-note">
+        <span class="note-label">Focus</span>
+        <strong>Catalog, stock, barcode, pricing</strong>
+      </div>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </aside>
+
+  <section class="dashboard-shell">
+    <header class="dashboard-header">
+      <div class="header-main">
+        <button class="menu-toggle" type="button" aria-label="Open sidebar" (click)="toggleSidebar()">☰</button>
+        <div class="header-content">
+          <p class="eyebrow">Techmart Hardware</p>
+          <h2>
+            @if (activeTab() === 'overview') { Overview }
+            @if (activeTab() === 'entry') { Add Product }
+            @if (activeTab() === 'product') { Products }
+            @if (activeTab() === 'pricing') { Pricing }
+            @if (activeTab() === 'masters') { Masters }
+          </h2>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <span class="user-badge">{{ currentUser()?.name }}</span>
+      </div>
+    </header>
+
+    <main class="dashboard-main">
+    @if (activeTab() === 'overview') {
+      <section class="hero-panel">
+        <div>
+          <p class="hero-kicker">Operations Dashboard</p>
+          <h3>Manage product intake, stock corrections, and catalog accuracy from one workspace.</h3>
+        </div>
+        <div class="hero-metrics">
+          <span>{{ totalProducts() }} products</span>
+          <span>{{ activeProducts() }} active</span>
+        </div>
+      </section>
+
+      <div class="stats-grid">
+        <div class="stat-card premium">
+          <div class="stat-icon">📦</div>
+          <p class="stat-label">Total Products</p>
+          <p class="stat-value">{{ totalProducts() }}</p>
+          <div class="stat-bar"></div>
+        </div>
+        <div class="stat-card premium">
+          <div class="stat-icon">✅</div>
+          <p class="stat-label">Active Products</p>
+          <p class="stat-value">{{ activeProducts() }}</p>
+          <div class="stat-bar"></div>
+        </div>
+        <div class="stat-card premium">
+          <div class="stat-icon">⭐</div>
+          <p class="stat-label">New Arrivals</p>
+          <p class="stat-value">{{ newArrivals() }}</p>
+          <div class="stat-bar"></div>
+        </div>
+        <div class="stat-card premium">
+          <div class="stat-icon">🏷️</div>
+          <p class="stat-label">Categories</p>
+          <p class="stat-value">{{ categories() }}</p>
+          <div class="stat-bar"></div>
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'entry') {
+      <div class="entry-panel">
+        <app-product-entry-shared></app-product-entry-shared>
+      </div>
+    }
+
+    @if (activeTab() === 'product') {
+      <app-product-list-shared [title]="'📦 Product Catalog'" (addProduct)="setTab('entry')"></app-product-list-shared>
+    }
+
+    @if (activeTab() === 'pricing') {
+      <div class="section premium">
+        <h2>💰 Pricing Management</h2>
+        <p style="color: #6b7c8f; margin-top: 1rem;">Set product prices, manage variants, and configure GST details</p>
+      </div>
+    }
+
+    @if (activeTab() === 'masters') {
+      <app-product-masters-shared></app-product-masters-shared>
+    }
+    </main>
+  </section>
+</div>

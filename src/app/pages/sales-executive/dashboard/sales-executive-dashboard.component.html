@@ -1,0 +1,80 @@
+<div class="sales-executive-dashboard">
+  <header class="dashboard-header">
+    <div class="header-content">
+      <h1>💼 Sales Executive</h1>
+      <p class="shop-name">{{ currentUser()?.shopName || 'Shop' }}</p>
+    </div>
+    <div class="header-actions">
+      <span class="user-badge">{{ currentUser()?.name }}</span>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  <nav class="dashboard-tabs">
+    <button class="tab-btn" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')"><span class="tab-icon">📊</span> Overview</button>
+    <button class="tab-btn" [class.active]="activeTab() === 'billing'" (click)="setTab('billing')"><span class="tab-icon">📋</span> Billing</button>
+    <button class="tab-btn" [class.active]="activeTab() === 'customers'" (click)="setTab('customers')"><span class="tab-icon">👥</span> Customers</button>
+  </nav>
+
+  <main class="dashboard-main">
+    @if (activeTab() === 'overview') {
+      <div class="stats-grid">
+        <div class="stat-card">
+          <p class="stat-label">Today's Sales</p>
+          <p class="stat-value">₹{{ (todaySales() / 1000).toFixed(1) }}K</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Total Orders</p>
+          <p class="stat-value">{{ totalOrders() }}</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Avg Order Value</p>
+          <p class="stat-value">₹{{ avgOrderValue() }}</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Returns</p>
+          <p class="stat-value">{{ returnsCount() }}</p>
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'billing') {
+      <div class="section">
+        <h2>Recent Transactions</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Bill ID</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Items</th>
+                <th>Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (txn of transactions(); track txn.id) {
+                <tr>
+                  <td class="mono">{{ txn.id }}</td>
+                  <td>{{ txn.customer }}</td>
+                  <td><strong>₹{{ txn.amount }}</strong></td>
+                  <td>{{ txn.items }}</td>
+                  <td>{{ txn.time }}</td>
+                  <td><span class="badge completed">{{ txn.status }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'customers') {
+      <div class="section">
+        <h2>Customer Management</h2>
+        <p style="color: #6b7c8f;">View and manage customer profiles and purchase history</p>
+      </div>
+    }
+  </main>
+</div>

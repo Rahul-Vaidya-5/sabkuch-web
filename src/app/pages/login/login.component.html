@@ -1,0 +1,56 @@
+<section class="login-wrap">
+  <article class="login-card">
+    <h1>Login</h1>
+    <p>Login is available through mobile number only.</p>
+
+    <form [formGroup]="loginForm" novalidate>
+      <label>
+        Mobile Number
+        <input
+          type="tel"
+          formControlName="mobile"
+          placeholder="Enter 10 digit mobile number"
+          inputmode="numeric"
+          maxlength="10"
+          pattern="[0-9]*"
+          (input)="onMobileInput($event)"
+        />
+        @if (isMobileInvalid()) {
+          <span class="error">Please enter a valid 10 digit mobile number.</span>
+        }
+      </label>
+
+      @if (stage() === 'mobile' || stage() === 'not-registered') {
+        <button type="button" (click)="checkMobile()">Continue</button>
+      }
+
+      @if (stage() === 'password') {
+        <label>
+          Password
+          <input type="password" formControlName="password" placeholder="Enter password" />
+          @if (isPasswordInvalid()) {
+            <span class="error">Password must be at least 6 characters.</span>
+          }
+          @if (passwordError()) {
+            <span class="error">{{ passwordError() }}</span>
+          }
+        </label>
+
+        <button type="button" (click)="login()">Login</button>
+      }
+    </form>
+
+    @if (stage() === 'not-registered') {
+      <p class="error">Your number is not registered with us.</p>
+      <button type="button" class="secondary" (click)="tryAgain()">Try Another Number</button>
+    }
+
+    @if (stage() === 'authenticated') {
+      <div class="authenticated-box">
+        <p class="success">Welcome, {{ loggedInUser()?.name }}!</p>
+        <span class="role-badge role-{{ loggedInUser()?.role?.toLowerCase() }}">{{ loggedInUser()?.role }}</span>
+        <p class="muted-note">Dashboard is being set up. Redirections coming soon.</p>
+      </div>
+    }
+  </article>
+</section>

@@ -1,0 +1,91 @@
+<section class="registration-wrap">
+  <header>
+    <h1>Shop Registration</h1>
+    <p>
+      Register a shop to onboard inventory operations. Select appropriate category and subcategory.
+    </p>
+  </header>
+
+  <form [formGroup]="registrationForm" (ngSubmit)="submit()" novalidate>
+    <label>
+      Shop Name
+      <input type="text" formControlName="shopName" placeholder="Raj Hardware" />
+      @if (hasError('shopName')) {
+        <span class="error">Enter at least 3 characters.</span>
+      }
+    </label>
+
+    <label>
+      Owner Name
+      <input type="text" formControlName="ownerName" placeholder="Rajesh Sharma" />
+      @if (hasError('ownerName')) {
+        <span class="error">Owner name is required.</span>
+      }
+    </label>
+
+    <label>
+      Phone Number
+      <input type="tel" formControlName="phoneNumber" placeholder="9876543210" />
+      @if (hasError('phoneNumber')) {
+        <span class="error">Use a valid 10 digit mobile number.</span>
+      }
+    </label>
+
+    <label>
+      Shop Category
+      <select formControlName="category">
+        <option value="">Select category</option>
+        @for (cat of categories; track cat.code) {
+          <option [value]="cat.code">{{ cat.name_en }}</option>
+        }
+      </select>
+      @if (hasError('category')) {
+        <span class="error">Select one category.</span>
+      }
+    </label>
+
+    <label class="full-row">
+      Address
+      <input type="text" formControlName="address" placeholder="Market Road, Sector 3" />
+      @if (hasError('address')) {
+        <span class="error">Address is required.</span>
+      }
+    </label>
+
+    <label>
+      City
+      <input type="text" formControlName="city" placeholder="Raipur" />
+      @if (hasError('city')) {
+        <span class="error">City is required.</span>
+      }
+    </label>
+
+    <label>
+      State
+      <input type="text" formControlName="state" placeholder="Chhattisgarh" />
+      @if (hasError('state')) {
+        <span class="error">State is required.</span>
+      }
+    </label>
+
+    <label>
+      Pin Code
+      <input type="text" formControlName="pinCode" placeholder="492001" />
+      @if (hasError('pinCode')) {
+        <span class="error">Use a valid 6 digit pin code.</span>
+      }
+    </label>
+
+    <div class="actions full-row">
+      <button type="submit">Register Shop</button>
+    </div>
+  </form>
+
+  @if (submitted()) {
+    <section class="success">
+      <h2>Registration Captured</h2>
+      <p>Shop registration has been submitted for approval.</p>
+      <pre>{{ payload() | json }}</pre>
+    </section>
+  }
+</section>

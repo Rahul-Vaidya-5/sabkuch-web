@@ -1,0 +1,35 @@
+:root {
+	--bg: #f4f6f4;
+	--surface: #ffffff;
+	--text: #1f2a2e;
+	--muted: #5a6c73;
+	--accent: #f2b705;
+	--accent-strong: #8a6300;
+	--border: #d3dce0;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	min-height: 100%;
+}
+
+body {
+	background:
+		radial-gradient(circle at 10% 0%, #d8ebff 0%, transparent 30%),
+		radial-gradient(circle at 100% 10%, #ffe5b4 0%, transparent 35%),
+		var(--bg);
+	color: var(--text);
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h1,
+h2,
+h3 {
+	font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial,
+		sans-serif;
+}

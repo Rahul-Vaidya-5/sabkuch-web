@@ -1,0 +1,397 @@
+<div class="product-entry-container">
+  <div class="form-header">
+    <div class="header-content">
+      <h1>📦 Product Entry</h1>
+      <p>Create and manage product catalog with detailed pricing and variants</p>
+    </div>
+    <div class="completion-indicator">
+      <div class="progress-ring">
+        <svg viewBox="0 0 100 100" class="progress-svg">
+          <circle cx="50" cy="50" r="45" class="progress-bg"></circle>
+          <circle cx="50" cy="50" r="45" class="progress-fill" [style.--percentage]="completionPercentage() + '%'" ></circle>
+        </svg>
+        <div class="progress-text">{{ completionPercentage() }}%</div>
+      </div>
+    </div>
+  </div>
+
+  @if (successMessage()) {
+    <div class="success-banner">✅ {{ successMessage() }}</div>
+  }
+
+  <div class="section-nav">
+    <button class="nav-btn" [class.active]="activeSection() === 'details'" (click)="setActiveSection('details')">
+      <span class="icon">📋</span>
+      <span>Product Details</span>
+      <span class="status" [class.complete]="isDetailsValid()">{{ isDetailsValid() ? '✓' : '○' }}</span>
+    </button>
+    <button class="nav-btn" [class.active]="activeSection() === 'pricing'" (click)="setActiveSection('pricing')">
+      <span class="icon">💰</span>
+      <span>Pricing</span>
+    </button>
+    <button class="nav-btn" [class.active]="activeSection() === 'discount'" (click)="setActiveSection('discount')">
+      <span class="icon">🏷️</span>
+      <span>Discounts</span>
+    </button>
+    <button class="nav-btn" [class.active]="activeSection() === 'gst'" (click)="setActiveSection('gst')">
+      <span class="icon">🧾</span>
+      <span>GST & Barcode</span>
+    </button>
+  </div>
+
+  <form [formGroup]="productForm" (ngSubmit)="submitForm()" class="product-form">
+    @if (activeSection() === 'details') {
+      <div class="form-section active">
+        <div class="section-title">
+          <h2>📋 Product Information</h2>
+          <p>Shop categories are separate. This section uses product masters only.</p>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Product Name *</label>
+            <input type="text" formControlName="productName" placeholder="e.g., Supreme Wall Paint" class="form-input">
+            @if (submitted() && productForm.get('productName')?.invalid) {
+              <span class="error-text">{{ getFieldError('productName') }}</span>
+            }
+          </div>
+          <div class="form-group">
+            <label>Product Category *</label>
+            <div class="master-input-row">
+              <input type="text" formControlName="category" list="product-category-options" placeholder="Search or type category" class="form-input">
+              <button type="button" class="add-master-btn" (click)="addCurrentCategory()" title="Add category to master" aria-label="Add category to master">+</button>
+            </div>
+            <datalist id="product-category-options">
+              @for (cat of categoryOptions(); track cat) {
+                <option [value]="cat"></option>
+              }
+            </datalist>
+            @if (submitted() && productForm.get('category')?.invalid) {
+              <span class="error-text">{{ getFieldError('category') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Brand Name *</label>
+            <div class="master-input-row">
+              <input type="text" formControlName="brand" list="brand-options" placeholder="Search or type brand" class="form-input">
+              <button type="button" class="add-master-btn" (click)="addCurrentBrand()" title="Add brand to master" aria-label="Add brand to master">+</button>
+            </div>
+            <datalist id="brand-options">
+              @for (brand of brandOptions(); track brand) {
+                <option [value]="brand"></option>
+              }
+            </datalist>
+            @if (submitted() && productForm.get('brand')?.invalid) {
+              <span class="error-text">{{ getFieldError('brand') }}</span>
+            }
+          </div>
+          <div class="form-group">
+            <label>Product Variant *</label>
+            <div class="master-input-row">
+              <input type="text" formControlName="variantLabel" list="variant-options" placeholder="Search or type variant" class="form-input">
+              <button type="button" class="add-master-btn" (click)="addCurrentVariant()" title="Add variant to master" aria-label="Add variant to master">+</button>
+            </div>
+            <datalist id="variant-options">
+              @for (variant of variantOptions(); track variant) {
+                <option [value]="variant"></option>
+              }
+            </datalist>
+            @if (submitted() && productForm.get('variantLabel')?.invalid) {
+              <span class="error-text">{{ getFieldError('variantLabel') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Unit *</label>
+            <div class="master-input-row">
+              <input type="text" formControlName="unit" list="unit-options" placeholder="Search or type unit" class="form-input">
+              <button type="button" class="add-master-btn" (click)="addCurrentUnit()" title="Add unit to master" aria-label="Add unit to master">+</button>
+            </div>
+            <datalist id="unit-options">
+              @for (unit of unitOptions(); track unit) {
+                <option [value]="unit"></option>
+              }
+            </datalist>
+          </div>
+          <div class="form-group">
+            <label>Conversion Factor *</label>
+            <input type="number" formControlName="conversionFactor" placeholder="e.g., 1000" step="0.1" class="form-input">
+            @if (submitted() && productForm.get('conversionFactor')?.invalid) {
+              <span class="error-text">{{ getFieldError('conversionFactor') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Package Label *</label>
+            <div class="master-input-row">
+              <input type="text" formControlName="sizeLabel" list="package-label-options" placeholder="Search or type package label" class="form-input">
+              <button type="button" class="add-master-btn" (click)="addCurrentPackageLabel()" title="Add package label to master" aria-label="Add package label to master">+</button>
+            </div>
+            <datalist id="package-label-options">
+              @for (size of sizeLabels(); track size) {
+                <option [value]="size"></option>
+              }
+            </datalist>
+            @if (submitted() && productForm.get('sizeLabel')?.invalid) {
+              <span class="error-text">{{ getFieldError('sizeLabel') }}</span>
+            }
+          </div>
+          <div class="form-group">
+            <label>Batch Code *</label>
+            <input type="text" formControlName="batchCode" placeholder="e.g., BATCH20240419" class="form-input">
+            @if (submitted() && productForm.get('batchCode')?.invalid) {
+              <span class="error-text">{{ getFieldError('batchCode') }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>Quick Preview</label>
+            <div class="preview-line">
+              {{ productForm.get('productName')?.value || '-' }} • {{ productForm.get('category')?.value || '-' }} • {{ productForm.get('brand')?.value || '-' }} • {{ productForm.get('variantLabel')?.value || '-' }} • {{ productForm.get('unit')?.value || '-' }} • {{ productForm.get('sizeLabel')?.value || '-' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (activeSection() === 'pricing') {
+      <div class="form-section active">
+        <div class="section-title">
+          <h2>💰 Pricing Information</h2>
+          <p>Set MRP and sales prices for package and single units</p>
+        </div>
+
+        <div class="pricing-card">
+          <div class="card-header">📦 Package Pricing</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Package MRP *</label>
+              <div class="input-group">
+                <span class="currency">₹</span>
+                <input type="number" formControlName="packageMrp" placeholder="0.00" step="0.01" class="form-input">
+              </div>
+              @if (submitted() && productForm.get('packageMrp')?.invalid) {
+                <span class="error-text">{{ getFieldError('packageMrp') }}</span>
+              }
+            </div>
+            <div class="form-group">
+              <label>Package Sale Price *</label>
+              <div class="input-group">
+                <span class="currency">₹</span>
+                <input type="number" formControlName="packageSalePrice" placeholder="0.00" step="0.01" class="form-input">
+              </div>
+              @if (submitted() && productForm.get('packageSalePrice')?.invalid) {
+                <span class="error-text">{{ getFieldError('packageSalePrice') }}</span>
+              }
+            </div>
+          </div>
+          <div class="discount-badge" *ngIf="calculatedPackageDiscount() > 0">Discount: {{ calculatedPackageDiscount() }}%</div>
+        </div>
+
+        <div class="pricing-card">
+          <div class="card-header">🔖 Single Unit Pricing</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Single Unit MRP *</label>
+              <div class="input-group">
+                <span class="currency">₹</span>
+                <input type="number" formControlName="singleUnitMrp" placeholder="0.00" step="0.01" class="form-input">
+              </div>
+              @if (submitted() && productForm.get('singleUnitMrp')?.invalid) {
+                <span class="error-text">{{ getFieldError('singleUnitMrp') }}</span>
+              }
+            </div>
+            <div class="form-group">
+              <label>Single Unit Sale Price *</label>
+              <div class="input-group">
+                <span class="currency">₹</span>
+                <input type="number" formControlName="singleUnitSalePrice" placeholder="0.00" step="0.01" class="form-input">
+              </div>
+              @if (submitted() && productForm.get('singleUnitSalePrice')?.invalid) {
+                <span class="error-text">{{ getFieldError('singleUnitSalePrice') }}</span>
+              }
+            </div>
+          </div>
+          <div class="discount-badge" *ngIf="calculatedUnitDiscount() > 0">Discount: {{ calculatedUnitDiscount() }}%</div>
+        </div>
+      </div>
+    }
+
+    @if (activeSection() === 'discount') {
+      <div class="form-section active">
+        <div class="section-title">
+          <h2>🏷️ Discount Management</h2>
+          <p>Configure different discounts for various customer types</p>
+        </div>
+
+        <div class="discount-card">
+          <div class="card-header">🏢 Wholeseller Discounts</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>New Customer Discount (%)</label>
+              <div class="input-group">
+                <input type="number" formControlName="wholesellerNew" placeholder="0" min="0" max="100" class="form-input">
+                <span class="unit">%</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Existing Customer Discount (%)</label>
+              <div class="input-group">
+                <input type="number" formControlName="wholesellerOld" placeholder="0" min="0" max="100" class="form-input">
+                <span class="unit">%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="discount-card">
+          <div class="card-header">🛒 Retailer Discounts</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>New Customer Discount (%)</label>
+              <div class="input-group">
+                <input type="number" formControlName="retailerNew" placeholder="0" min="0" max="100" class="form-input">
+                <span class="unit">%</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Existing Customer Discount (%)</label>
+              <div class="input-group">
+                <input type="number" formControlName="retailerOld" placeholder="0" min="0" max="100" class="form-input">
+                <span class="unit">%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-box">💡 <strong>Tip:</strong> Use differentiated discounts to incentivize bulk purchases and reward loyal customers.</div>
+      </div>
+    }
+
+    @if (activeSection() === 'gst') {
+      <div class="form-section active">
+        <div class="section-title">
+          <h2>🧾 GST Configuration</h2>
+          <p>Select a GST slab category and generate barcode before entering stock quantity</p>
+        </div>
+
+        <div class="gst-card">
+          <div class="form-row">
+            <div class="form-group">
+              <label>GST Type *</label>
+              <select formControlName="gstType" class="form-input">
+                @for (opt of gstTypeOptions; track opt.value) {
+                  <option [value]="opt.value">{{ opt.label }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>GST Slab Category *</label>
+              <select formControlName="gstPercent" class="form-input">
+                @for (slab of gstSlabOptions; track slab.value) {
+                  <option [ngValue]="slab.value">{{ slab.label }} ({{ slab.value }}%)</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <details class="gst-guide">
+            <summary>
+              <span class="guide-title">About GST Categories</span>
+              <span class="guide-subtitle">Reference information</span>
+            </summary>
+
+            <div class="gst-guide-list">
+              @for (slab of gstSlabOptions; track slab.value) {
+                <div class="gst-guide-row">
+                  <div class="gst-rate">{{ slab.value }}%</div>
+                  <div class="gst-meta">
+                    <div class="option-label">{{ slab.label }}</div>
+                    <p>{{ slab.description }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="info-box">GST slab is selected from the dropdown above. This guide is only for quick understanding.</div>
+          </details>
+        </div>
+
+        <div class="barcode-card">
+          <section class="barcode-tools" aria-label="Barcode tools">
+            <div class="barcode-tools-head">
+              <h3>🏷️ Barcode Tools</h3>
+              <p>Generate barcode, then download or print.</p>
+            </div>
+
+            <div class="barcode-tools-actions">
+              <button type="button" class="btn btn-secondary" (click)="generateBarcode()">Generate Barcode</button>
+              <button type="button" class="btn btn-secondary" [disabled]="!canUseBarcodeActions()" (click)="downloadBarcode()">Download</button>
+              <button type="button" class="btn btn-secondary" [disabled]="!canUseBarcodeActions()" (click)="printBarcode()">Print</button>
+            </div>
+
+            <div class="barcode-tools-preview" [class.ready]="canUseBarcodeActions()">
+              <svg id="product-barcode-svg" aria-label="Generated barcode preview"></svg>
+              <span class="barcode-tools-text">{{ productForm.get('barcode')?.value || 'No barcode generated yet' }}</span>
+            </div>
+          </section>
+
+          <div class="barcode-current">
+            <span class="barcode-current-label">Current Barcode</span>
+            <span class="barcode-current-value">{{ productForm.get('barcode')?.value || 'Not generated yet' }}</span>
+          </div>
+
+          <p class="barcode-note">Generate barcode from Barcode Tools above, then enter available quantity.</p>
+
+          <div class="quick-review-block">
+            <label>Product Quick Review</label>
+            <div class="preview-line">
+              {{ productForm.get('productName')?.value || '-' }} • {{ productForm.get('category')?.value || '-' }} • {{ productForm.get('brand')?.value || '-' }} • {{ productForm.get('variantLabel')?.value || '-' }} • {{ productForm.get('unit')?.value || '-' }} • {{ productForm.get('sizeLabel')?.value || '-' }}
+            </div>
+          </div>
+
+          <div class="quantity-after-barcode" [class.locked]="!canUseBarcodeActions()">
+            <label>Product Available Quantity *</label>
+            <input
+              type="text"
+              inputmode="numeric"
+              formControlName="openingStock"
+              placeholder="Enter available quantity (digits only)"
+              class="form-input quantity-input"
+              [disabled]="!canUseBarcodeActions()">
+            @if (!canUseBarcodeActions()) {
+              <span class="hint-text">Generate valid barcode first, then fill quantity here.</span>
+            }
+            @if (submitted() && productForm.get('openingStock')?.invalid) {
+              <span class="error-text">{{ getFieldError('openingStock') }}</span>
+            }
+          </div>
+
+          @if (submitted() && productForm.get('barcode')?.invalid) {
+            <span class="error-text">{{ getFieldError('barcode') }}</span>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="resetForm()">🔄 Reset</button>
+      <button type="submit" class="btn btn-primary" [disabled]="isSubmitting() || !canSubmitProduct()">
+        @if (isSubmitting()) {
+          <span class="spinner"></span> Saving...
+        } @else {
+          ✅ Submit Product
+        }
+      </button>
+    </div>
+  </form>
+</div>

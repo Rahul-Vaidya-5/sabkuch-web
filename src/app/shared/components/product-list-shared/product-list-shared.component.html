@@ -1,0 +1,276 @@
+<section class="shared-product-list section premium">
+  <header class="list-topbar">
+    <div class="title-block">
+      <h2>{{ title() }}</h2>
+      <p>Track stock, pricing, and product health in one place.</p>
+    </div>
+
+    <div class="toolbar-actions">
+      <label class="search-box" aria-label="Search products">
+        <span class="search-icon">🔎</span>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search by ID, product, category, or brand"
+          [value]="searchQuery()"
+          (input)="searchQuery.set($any($event.target).value)" />
+      </label>
+
+      @if (showAddButton()) {
+        <button class="btn-secondary" type="button" (click)="onAddProduct()">{{ addButtonLabel() }}</button>
+      }
+    </div>
+  </header>
+
+  <div class="stats-row">
+    <article class="mini-stat">
+      <span class="mini-label">Visible</span>
+      <strong class="mini-value">{{ filteredCount() }}</strong>
+    </article>
+    <article class="mini-stat">
+      <span class="mini-label">Active</span>
+      <strong class="mini-value">{{ activeCount() }}</strong>
+    </article>
+    <article class="mini-stat">
+      <span class="mini-label">Low Stock</span>
+      <strong class="mini-value">{{ lowStockCount() }}</strong>
+    </article>
+    <article class="mini-stat">
+      <span class="mini-label">Out Of Stock</span>
+      <strong class="mini-value">{{ outOfStockCount() }}</strong>
+    </article>
+  </div>
+
+  <div class="table-shell">
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Brand</th>
+            <th>Barcode</th>
+            <th>Unit Price</th>
+            <th>Stock</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of filteredProducts(); track product.id) {
+            <tr [class.inactive]="product.status === 'Inactive'">
+              <td>
+                <div class="product-cell">
+                  <strong>{{ product.name }}</strong>
+                  <span class="mono">{{ product.id }}</span>
+                </div>
+              </td>
+              <td>{{ product.category }}</td>
+              <td>{{ product.brand }}</td>
+              <td>
+                <div class="barcode-cell">
+                  <span class="mono">{{ product.barcode || 'Not generated' }}</span>
+                  <button
+                    type="button"
+                    class="inline-link-btn"
+                    [title]="product.barcode ? 'Regenerate barcode' : 'Generate barcode'"
+                    [attr.aria-label]="product.barcode ? 'Regenerate barcode' : 'Generate barcode'"
+                    (click)="regenerateBarcode(product)">
+                    ↻
+                  </button>
+                  <button
+                    type="button"
+                    class="inline-link-btn"
+                    title="Print barcode"
+                    aria-label="Print barcode"
+                    (click)="printBarcode(product)">
+                    🖨
+                  </button>
+                </div>
+              </td>
+              <td>
+                <div class="metric-cell">
+                  <span class="price">₹{{ product.price }}</span>
+                  <button type="button" class="inline-link-btn" title="Edit price" aria-label="Edit price" (click)="openPriceModal(product)">✎</button>
+                </div>
+              </td>
+              <td>
+                <div class="metric-cell">
+                  <div class="stock-meta">
+                    <strong>{{ product.stock }}</strong>
+                    <small>{{ stockLabel(product.stock) }}</small>
+                  </div>
+                  <button type="button" class="inline-link-btn" title="Edit stock" aria-label="Edit stock" (click)="openStockModal(product)">✎</button>
+                </div>
+              </td>
+              <td>
+                <div class="status-cell">
+                  <span class="badge" [class]="statusClass(product.status, product.stock)">
+                    {{ statusText(product.status, product.stock) }}
+                  </span>
+                  @if (product.disableReason) {
+                    <small class="reason-text">{{ product.disableReason }}</small>
+                  }
+                </div>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button type="button" class="icon-btn" title="View history" aria-label="View history" (click)="openHistoryModal(product)">🕘</button>
+                  @if (product.status !== 'Inactive') {
+                    <button type="button" class="icon-btn warning" title="Mark inactive with reason" aria-label="Mark inactive with reason" (click)="openDisableModal(product)">⛔</button>
+                  } @else {
+                    <button type="button" class="tiny-btn success" (click)="enableProduct(product)">Enable</button>
+                  }
+                  @if (allowDelete()) {
+                    <button type="button" class="icon-btn delete" title="Permanently delete wrong entry" aria-label="Permanently delete wrong entry" (click)="openDeleteModal(product)">🗑</button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+
+          @if (filteredProducts().length === 0) {
+            <tr>
+              <td colspan="8" class="empty-state">{{ emptyMessage() }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  @if (activeModal() !== 'none' && selectedProduct()) {
+    <div class="modal-backdrop" (click)="closeModal()"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      @if (activeModal() === 'stock') {
+        <h3>Update Stock</h3>
+        <p class="modal-sub">{{ selectedProduct()!.name }} • Current stock: {{ selectedProduct()!.stock }}</p>
+        <div class="modal-grid">
+          <label>Received Quantity
+            <input type="number" min="1" [value]="stockQtyDraft()" (input)="stockQtyDraft.set($any($event.target).value)">
+          </label>
+          <label>Batch ID
+            <input type="text" [value]="batchIdDraft()" (input)="batchIdDraft.set($any($event.target).value)">
+          </label>
+          <label>Purchase Date
+            <input type="date" [value]="purchaseDateDraft()" (input)="purchaseDateDraft.set($any($event.target).value)">
+          </label>
+          <label>Purchase Order ID
+            <input type="text" [value]="purchaseOrderIdDraft()" (input)="purchaseOrderIdDraft.set($any($event.target).value)">
+          </label>
+          <label>New Unit Price
+            <input type="number" min="0" step="0.01" [value]="stockPriceDraft()" (input)="stockPriceDraft.set($any($event.target).value)">
+          </label>
+        </div>
+        @if (modalError()) {
+          <p class="modal-error">{{ modalError() }}</p>
+        }
+        <div class="modal-actions">
+          <button type="button" class="tiny-btn" (click)="closeModal()">Cancel</button>
+          <button type="button" class="tiny-btn success" (click)="submitStockModal()">Update Stock</button>
+        </div>
+      }
+
+      @if (activeModal() === 'price') {
+        <h3>Update Price</h3>
+        <p class="modal-sub">{{ selectedProduct()!.name }} • Current price: ₹{{ selectedProduct()!.price }}</p>
+        <div class="modal-grid">
+          <label>New Unit Price
+            <input type="number" min="0" step="0.01" [value]="priceValueDraft()" (input)="priceValueDraft.set($any($event.target).value)">
+          </label>
+          <label>Effective Date
+            <input type="date" [value]="priceDateDraft()" (input)="priceDateDraft.set($any($event.target).value)">
+          </label>
+          <label class="span-2">Reason (optional)
+            <input type="text" [value]="priceReasonDraft()" (input)="priceReasonDraft.set($any($event.target).value)">
+          </label>
+        </div>
+        @if (modalError()) {
+          <p class="modal-error">{{ modalError() }}</p>
+        }
+        <div class="modal-actions">
+          <button type="button" class="tiny-btn" (click)="closeModal()">Cancel</button>
+          <button type="button" class="tiny-btn success" (click)="submitPriceModal()">Update Price</button>
+        </div>
+      }
+
+      @if (activeModal() === 'disable') {
+        <h3>Disable Product</h3>
+        <p class="modal-sub">{{ selectedProduct()!.name }} will be marked as inactive.</p>
+        <div class="modal-grid">
+          <label class="span-2">Reason
+            <input type="text" placeholder="e.g. Product is faulty" [value]="disableReasonDraft()" (input)="disableReasonDraft.set($any($event.target).value)">
+          </label>
+        </div>
+        @if (modalError()) {
+          <p class="modal-error">{{ modalError() }}</p>
+        }
+        <div class="modal-actions">
+          <button type="button" class="tiny-btn" (click)="closeModal()">Cancel</button>
+          <button type="button" class="tiny-btn danger" (click)="submitDisableModal()">Disable Product</button>
+        </div>
+      }
+
+      @if (activeModal() === 'history') {
+        <h3>Audit History</h3>
+        <p class="modal-sub">{{ selectedProduct()!.name }} • {{ selectedProduct()!.id }}</p>
+
+        @if (hasAuditHistory(selectedProduct()!)) {
+          <div class="history-grid">
+            <div class="history-item">
+              <span class="history-label">Last Batch ID</span>
+              <span class="history-value">{{ selectedProduct()!.lastBatchId || '—' }}</span>
+            </div>
+            <div class="history-item">
+              <span class="history-label">Purchase Date</span>
+              <span class="history-value">{{ selectedProduct()!.lastPurchaseDate || '—' }}</span>
+            </div>
+            <div class="history-item">
+              <span class="history-label">Purchase Order ID</span>
+              <span class="history-value">{{ selectedProduct()!.lastPurchaseOrderId || '—' }}</span>
+            </div>
+            <div class="history-item">
+              <span class="history-label">Stock Update Note</span>
+              <span class="history-value">{{ selectedProduct()!.lastStockUpdateReason || '—' }}</span>
+            </div>
+            <div class="history-item">
+              <span class="history-label">Price Updated On</span>
+              <span class="history-value">{{ selectedProduct()!.lastPriceUpdatedOn || '—' }}</span>
+            </div>
+            <div class="history-item">
+              <span class="history-label">Price Update Note</span>
+              <span class="history-value">{{ selectedProduct()!.lastPriceUpdateReason || '—' }}</span>
+            </div>
+            <div class="history-item span-2">
+              <span class="history-label">Disable Reason</span>
+              <span class="history-value">{{ selectedProduct()!.disableReason || '—' }}</span>
+            </div>
+          </div>
+        } @else {
+          <p class="modal-sub">No audit history available yet for this product.</p>
+        }
+
+        <div class="modal-actions">
+          <button type="button" class="tiny-btn" (click)="closeModal()">Close</button>
+        </div>
+      }
+
+      @if (activeModal() === 'delete') {
+        <h3>Delete Product</h3>
+        <p class="modal-sub">This will permanently remove {{ selectedProduct()!.name }} from the list. Use only for wrong entries.</p>
+        <div class="modal-grid">
+          <label class="span-2">Deletion Reason
+            <input type="text" placeholder="e.g. Wrong entry created by mistake" [value]="disableReasonDraft()" (input)="disableReasonDraft.set($any($event.target).value)">
+          </label>
+        </div>
+        @if (modalError()) {
+          <p class="modal-error">{{ modalError() }}</p>
+        }
+        <div class="modal-actions">
+          <button type="button" class="tiny-btn" (click)="closeModal()">Cancel</button>
+          <button type="button" class="tiny-btn danger" (click)="submitDeleteModal()">Delete Product</button>
+        </div>
+      }
+    </div>
+  }
+</section>

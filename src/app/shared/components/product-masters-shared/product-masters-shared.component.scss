@@ -1,0 +1,134 @@
+.masters-shell {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 1.5rem;
+}
+
+.masters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.masters-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #1f2937;
+}
+
+.masters-header p {
+  margin: 0.4rem 0 0;
+  color: #6b7280;
+}
+
+.summary-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  background: #f3f4f6;
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.masters-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.master-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0.85rem;
+  background: #fafafa;
+}
+
+.master-card h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.add-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+}
+
+.add-row input,
+li input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.86rem;
+}
+
+button {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #f3f4f6;
+}
+
+button.danger {
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+button.ghost {
+  color: #374151;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-height: 220px;
+  overflow: auto;
+}
+
+li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #eef2f7;
+}
+
+.actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+@media (max-width: 860px) {
+  .masters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .masters-header {
+    flex-direction: column;
+  }
+}
